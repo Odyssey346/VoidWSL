@@ -1,9 +1,12 @@
 @echo off
 
 rem Get Void Linux rootfs tar
+echo Creating x64 folder...
+mkdir x64
 echo Getting Void Linux rootfs tar...
 pwsh -Command "Invoke-WebRequest -Uri https://repo-default.voidlinux.org/live/current/void-x86_64-ROOTFS-20221001.tar.xz -OutFile x64/install.tar.gz"
-rem I should add md5 hash checking
+echo Showing md5 hash...
+pwsh -Command "Get-FileHash -Path x64/install.tar.gz -Algorithm MD5 | Format-List"
 
 rem Add path to MSBuild Binaries
 set MSBUILD=()
