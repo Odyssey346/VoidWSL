@@ -9,25 +9,47 @@ bool DistributionInfo::CreateUser(std::wstring_view userName)
 {
     // Create the user account.
     DWORD exitCode;
-    std::wstring commandLine = L"/usr/sbin/adduser --quiet --gecos '' ";
+    std::wstring commandLine = L"/usr/sbin/useradd -m ";
     commandLine += userName;
     HRESULT hr = g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
     if ((FAILED(hr)) || (exitCode != 0)) {
         return false;
     }
+        
+    // Ask the user to enter a password for the new user account.
+    commandLine = L"/usr/bin/passwd ";
+    commandLine += userName;
+    hr = g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
+    if ((FAILED(hr)) || (exitCode != 0)) {
+		// Delete the user if the password set command failed.
+		commandLine = L"/usr/sbin/userdel ";
+		commandLine += userName;
+		g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
+		return false;
+	}
 
     // Add the user account to any relevant groups.
-    commandLine = L"/usr/sbin/usermod -aG adm,cdrom,sudo,dip,plugdev ";
+    commandLine = L"/usr/sbin/usermod -aG adm,cdrom,plugdev,wheel ";
     commandLine += userName;
     hr = g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
     if ((FAILED(hr)) || (exitCode != 0)) {
 
         // Delete the user if the group add command failed.
-        commandLine = L"/usr/sbin/deluser ";
+        commandLine = L"/usr/sbin/userdel ";
         commandLine += userName;
         g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
         return false;
     }
+
+    // Uncomment wheel group in /etc/sudoers
+    commandLine = L"sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers";
+    hr = g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
+    if ((FAILED(hr)) || (exitCode != 0)) {
+		// Delete the user if the group add command failed.
+		commandLine = L"/usr/bin/echo Could not allow wheel group to use sudo. ";
+		g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
+		return false;
+	}
 
     return true;
 }
@@ -75,4 +97,19 @@ ULONG DistributionInfo::QueryUid(std::wstring_view userName)
     }
 
     return uid;
+}
+
+bool DistributionInfo::SetupFiles(std::wstring_view userName) 
+{
+    DWORD exitCode;
+    // create /etc/motd
+    std::wstring commandLine = L"/usr/bin/echo 'Welcome to Void Linux running on WSL!\nThe default password of the root user is voidlinux.\nYou also have access to sudo as the account you created.\nTo remove this message, edit /etc/motd.\nEnjoy!' > /etc/motd";
+    g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
+    // add /etc/motd to bashrc
+    commandLine = L"/usr/bin/echo cat /etc/motd >> /home/";
+    commandLine += userName;
+    commandLine += L"/.bashrc";
+    g_wslApi.WslLaunchInteractive(commandLine.c_str(), true, &exitCode);
+
+    return true;
 }

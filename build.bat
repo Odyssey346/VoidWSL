@@ -1,5 +1,10 @@
 @echo off
 
+rem Get Void Linux rootfs tar
+echo Getting Void Linux rootfs tar...
+curl.exe -L https://repo-default.voidlinux.org/live/current/void-x86_64-ROOTFS-20221001.tar.xz > x64/install.tar.gz
+rem I should add md5 hash checking
+
 rem Add path to MSBuild Binaries
 set MSBUILD=()
 if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\msbuild.exe" (
@@ -61,7 +66,7 @@ if %MSBUILD%==() (
 ) 
 :FOUND_MSBUILD
 set _MSBUILD_TARGET=Build
-set _MSBUILD_CONFIG=Debug
+set _MSBUILD_CONFIG=Release
 
 :ARGS_LOOP
 if (%1) == () goto :POST_ARGS_LOOP

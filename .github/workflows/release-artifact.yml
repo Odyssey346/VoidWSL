@@ -1,0 +1,26 @@
+name: Release Artifact
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+
+      - name: Build
+        run: build.bat
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: VoidWSL_x64_Release
+          path: |
+            x64\Release\*

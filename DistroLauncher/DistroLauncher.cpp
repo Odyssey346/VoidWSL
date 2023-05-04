@@ -45,6 +45,12 @@ HRESULT InstallDistribution(bool createUser)
 
         } while (!DistributionInfo::CreateUser(userName));
 
+        // Set up the .bashrc for the user account.
+        BOOL dr = DistributionInfo::SetupFiles(userName);
+        if (dr == FALSE) {
+            return E_FAIL;
+        }
+
         // Set this user account as the default.
         hr = SetDefaultUser(userName);
         if (FAILED(hr)) {
