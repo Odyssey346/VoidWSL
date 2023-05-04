@@ -16,7 +16,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.1
 
       - name: Build
-        run: build.bat
+        run: .\build.bat
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
