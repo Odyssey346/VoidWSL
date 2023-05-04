@@ -2,7 +2,7 @@
 
 rem Get Void Linux rootfs tar
 echo Getting Void Linux rootfs tar...
-curl.exe -L https://repo-default.voidlinux.org/live/current/void-x86_64-ROOTFS-20221001.tar.xz > x64/install.tar.gz
+pwsh -Command "Invoke-WebRequest -Uri https://repo-default.voidlinux.org/live/current/void-x86_64-ROOTFS-20221001.tar.xz -OutFile x64/install.tar.gz"
 rem I should add md5 hash checking
 
 rem Add path to MSBuild Binaries
